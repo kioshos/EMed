@@ -15,7 +15,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddPersistence(builder.Configuration);
-
+builder.Services.AddCaching(builder.Configuration);
 
 
 builder.Services.AddScoped<IRepository<MedicalRecord, Guid>,MedicalRecordRepository>();
