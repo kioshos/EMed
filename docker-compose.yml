@@ -7,7 +7,8 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__Postgres: "Host=db;Port=5432;Database=EMed;Username=postgres;Password=postgres;Maximum Pool Size=100;Minimum Pool Size=10"
       ConnectionStrings__Redis: "redis:6379,abortConnect=false"
-    depends_on: 
+      ConnectionStrings__Kafka: "kafka:9093"
+    depends_on:
       db:
         condition: service_healthy
 
@@ -21,7 +22,7 @@ services:
       - db-data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d EMed"]
-      interval: 5s 
+      interval: 5s
       timeout: 5s
 
   adminer:
@@ -43,10 +44,59 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
+  
+  kafka:
+    image: apache/kafka:3.9.2
+    container_name: kafka
+    ports:
+      - "9092:9092"
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    environment:
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+      
+      # KRaft settings
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9094
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      
+      # Dual listeners: HOST for your IDE (localhost:9092), DOCKER for containers (kafka:9093)
+      KAFKA_LISTENERS: HOST://0.0.0.0:9092,DOCKER://0.0.0.0:9093,CONTROLLER://0.0.0.0:9094
+      KAFKA_ADVERTISED_LISTENERS: HOST://localhost:9092,DOCKER://kafka:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: HOST:PLAINTEXT,DOCKER:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: DOCKER
+      
+      # Single-node cluster defaults
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    
+    healthcheck:
+      test: [ "CMD-SHELL", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9093 --list" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    ports:
+      - "8080:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local-cluster
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9093
+    depends_on:
+      kafka:
+        condition: service_healthy
+
 
 volumes:
   db-data: {}
   redis_data: {}
+  kafka-data: {}
 
 networks:
   emed-network:

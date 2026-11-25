@@ -1,6 +1,9 @@
 using EMed.Application.Interfaces;
+using EMed.Application.Interfaces.Kafka;
 using EMed.Application.Services;
+using EMed.BackgroundServices;
 using EMed.Domain.Models;
+using EMed.Infrastructure.Postgres.Kafka;
 using EMed.Infrastructure.Postgres.Persistence;
 using EMed.Infrastructure.Postgres.Repositories;
 
@@ -16,7 +19,8 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddPersistence(builder.Configuration);
 builder.Services.AddCaching(builder.Configuration);
-
+builder.Services.AddSingleton<IEventProducer, KafkaProducer>();
+builder.Services.AddBackgroundWorkers();
 
 builder.Services.AddScoped<IRepository<MedicalRecord, Guid>,MedicalRecordRepository>();
 builder.Services.AddScoped<IRepository<Patient, Guid>,PatientRepository>();
