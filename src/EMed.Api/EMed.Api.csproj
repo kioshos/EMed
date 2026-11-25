@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\EMed.Application\EMed.Application.csproj" />
+    <ProjectReference Include="..\EMed.BackgroundServices\EMed.BackgroundServices.csproj" />
     <ProjectReference Include="..\EMed.Infrastructure.Postgres\EMed.Infrastructure.Postgres.csproj" />
   </ItemGroup>
 

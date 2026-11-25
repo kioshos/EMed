@@ -1,6 +1,8 @@
 using EMed.Application.Dtos;
+using EMed.Application.Events;
 using EMed.Application.Interfaces;
 using EMed.Application.Interfaces.Caching;
+using EMed.Application.Interfaces.Kafka;
 using EMed.Domain.Models;
 
 namespace EMed.Application.Services;
@@ -13,10 +15,12 @@ public class PatientService
     private readonly IScheduleRepository _scheduleRepository;
     private readonly ICacheService _cacheService;
     private readonly ICacheInvalidator _cacheInvalidator;
+    private readonly IEventProducer _eventProducer;
 
     public PatientService(IRepository<Patient, Guid> patientRepository, 
         IAppointmentRepository appointmentRepository, IDoctorRepository doctorRepository, 
-        IScheduleRepository scheduleRepository, ICacheService cacheService, ICacheInvalidator cacheInvalidator)
+        IScheduleRepository scheduleRepository, ICacheService cacheService, ICacheInvalidator cacheInvalidator,
+        IEventProducer eventProducer)
     {
         _patientRepository = patientRepository;
         _appointmentRepository = appointmentRepository;
@@ -25,6 +29,7 @@ public class PatientService
         
         _cacheService = cacheService;
         _cacheInvalidator = cacheInvalidator;
+        _eventProducer = eventProducer; 
     }
     
 
@@ -96,6 +101,19 @@ public class PatientService
         
         var appointment = new Appointment(patientId, requestDto.DoctorId, requestDto.Time, requestDto.Description);
         await _appointmentRepository.AddAsync(appointment,cancellationToken);
+        
+        var @event = new AppointmentCreatedEvent(
+            Id: appointment.Id,
+            PatientId: appointment.PatientId,
+            DoctorId: appointment.DoctorId,
+            Time: appointment.Time,
+            Description: appointment.Description);
+        
+        await _eventProducer.PublishAsync(
+            "appointment-created", 
+            appointment.Id.ToString(), 
+            @event, 
+            cancellationToken);
     }
     
     

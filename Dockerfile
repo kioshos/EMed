@@ -9,6 +9,7 @@ COPY src/EMed.Domain/EMed.Domain.csproj src/EMed.Domain/
 COPY src/EMed.Application/EMed.Application.csproj src/EMed.Application/
 COPY src/EMed.Infrastructure.Postgres/EMed.Infrastructure.Postgres.csproj src/EMed.Infrastructure.Postgres/
 COPY src/EMed.Api/EMed.Api.csproj src/EMed.Api/
+COPY src/EMed.BackgroundServices/EMed.BackgroundServices.csproj src/EMed.BackgroundServices/
 
 RUN dotnet restore src/EMed.Api/EMed.Api.csproj
 

@@ -4,11 +4,14 @@
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
   <ItemGroup Label="OpenApi">
+    <PackageVersion Include="Confluent.Kafka" Version="2.10.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.17" />
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="9.0.17" />
     <PackageVersion Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="9.0.17" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.17" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.5" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.5" />
     <PackageVersion Include="NBomber" Version="6.2.0" />
     <PackageVersion Include="NBomber.Http" Version="6.2.0" />
     <PackageVersion Include="Npgsql" Version="9.0.3" />

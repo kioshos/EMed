@@ -1,6 +1,6 @@
 namespace EMed.Application.Dtos;
 
-public sealed class PatientDto
+public sealed record PatientDto
 {
     public string Name { get; init; }
     public int Age { get; init; }
