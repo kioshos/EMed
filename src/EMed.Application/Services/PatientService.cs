@@ -1,5 +1,6 @@
 using EMed.Application.Dtos;
 using EMed.Application.Interfaces;
+using EMed.Application.Interfaces.Caching;
 using EMed.Domain.Models;
 
 namespace EMed.Application.Services;
@@ -10,14 +11,20 @@ public class PatientService
     private readonly IAppointmentRepository _appointmentRepository;
     private readonly IDoctorRepository _doctorRepository;
     private readonly IScheduleRepository _scheduleRepository;
+    private readonly ICacheService _cacheService;
+    private readonly ICacheInvalidator _cacheInvalidator;
 
     public PatientService(IRepository<Patient, Guid> patientRepository, 
-        IAppointmentRepository appointmentRepository, IDoctorRepository doctorRepository, IScheduleRepository scheduleRepository)
+        IAppointmentRepository appointmentRepository, IDoctorRepository doctorRepository, 
+        IScheduleRepository scheduleRepository, ICacheService cacheService, ICacheInvalidator cacheInvalidator)
     {
         _patientRepository = patientRepository;
         _appointmentRepository = appointmentRepository;
         _doctorRepository = doctorRepository;
         _scheduleRepository = scheduleRepository;
+        
+        _cacheService = cacheService;
+        _cacheInvalidator = cacheInvalidator;
     }
     
 
@@ -29,10 +36,21 @@ public class PatientService
     }
     public async Task<Patient> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
+        var cached = await _cacheService.GetAsync<Patient>($"patient:{id}", cancellationToken);
+        
+        if (cached != null)
+           return cached; 
+            
         var patient = await _patientRepository.GetByIdAsync(id, cancellationToken);
         
         if (patient == null)
             throw new Exception("Patient not found");
+        
+        await _cacheService.SetAsync(
+            $"patient:{patient.Id.ToString()}", 
+            patient, 
+            TimeSpan.FromMinutes(10), 
+            cancellationToken);
 
         return patient;
     }

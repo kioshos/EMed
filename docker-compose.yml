@@ -6,6 +6,7 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__Postgres: "Host=db;Port=5432;Database=EMed;Username=postgres;Password=postgres;Maximum Pool Size=100;Minimum Pool Size=10"
+      ConnectionStrings__Redis: "redis:6379,abortConnect=false"
     depends_on: 
       db:
         condition: service_healthy
@@ -29,9 +30,23 @@ services:
     environment:
       ADMINER_DEFAULT_SERVER: db
     depends_on: [db]
+  
+  redis:
+    image: redis:8.6.8
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
 
 volumes:
   db-data: {}
+  redis_data: {}
 
 networks:
   emed-network:
