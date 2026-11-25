@@ -14,7 +14,7 @@ public class AppointmentLoggingConsumer : BackgroundService
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<AppointmentLoggingConsumer> _logger;
     
-    private const string TopicName = "appointment-logged";
+    private const string TopicName = "appointment-created";
     private const string GroupId = "appointment-logged-group";
 
     public AppointmentLoggingConsumer(IConfiguration configuration, 
